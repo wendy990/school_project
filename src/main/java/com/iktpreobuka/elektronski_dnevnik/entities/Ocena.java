@@ -25,8 +25,8 @@ import com.iktpreobuka.elektronski_dnevnik.customdate.CustomDateSerializer;
 import com.iktpreobuka.elektronski_dnevnik.enums.TipOcene;
 
 @Entity
+//@SQLDelete(sql = "UPDATE ocena SET deleted = '1' WHERE id = ?")
 @Where(clause = "deleted = false")
-@SQLDelete(sql="UPDATE ocena SET deleted = 'true' where id=?")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Ocena {
 
@@ -35,14 +35,12 @@ public class Ocena {
 	private Integer id;
 	@Column(name = "Tip_ocene")
 	private TipOcene tipOcene;
-	@Column(name = "Vrednost")
+	@Column(name = "Vrednost", precision = 1)
 	private Integer vrednost;
 	@Column(name = "Datum_unosa")
 	private Date datumUnosa;
 	@Column(name = "Polugodiste")
 	private Integer polugodiste;
-	@Column(name = "Zakljucna")
-	private boolean zakljucna;
 	@Column
 	private boolean deleted;
 	@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
@@ -86,11 +84,10 @@ public class Ocena {
 	}
 
 	@JsonSerialize(using = CustomDateSerializer.class)
-	@JsonDeserialize(using = CustomDateDeserializer.class)
 	public Date getDatumUnosa() {
 		return datumUnosa;
 	}
-
+	@JsonDeserialize(using = CustomDateDeserializer.class)
 	public void setDatumUnosa(Date datumUnosa) {
 		this.datumUnosa = datumUnosa;
 	}
@@ -101,14 +98,6 @@ public class Ocena {
 
 	public void setPolugodiste(Integer polugodiste) {
 		this.polugodiste = polugodiste;
-	}
-
-	public boolean isZakljucna() {
-		return zakljucna;
-	}
-
-	public void setZakljucna(boolean zakljucna) {
-		this.zakljucna = zakljucna;
 	}
 
 	public boolean isDeleted() {

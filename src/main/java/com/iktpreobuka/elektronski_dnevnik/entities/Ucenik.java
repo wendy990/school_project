@@ -30,6 +30,11 @@ public class Ucenik extends Osoba {
 			@JoinColumn(name = "ucenik_id", nullable = false, updatable = false) }, inverseJoinColumns = {
 					@JoinColumn(name = "roditelj_id", nullable = false, updatable = false) })
 	private List<Roditelj> roditelji = new ArrayList<>();
+	
+	//OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	//@JoinColumn(name = "korisnik")
+	//private Korisnik korisnik;
+
 
 	public Ucenik() {
 		super();

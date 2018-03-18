@@ -34,6 +34,8 @@ public abstract class Osoba {
 	protected Date datumRodjenja;
 	@Column(name = "adresa")
 	protected String adresa;
+	//@OneToOne
+	//private Korisnik korisnik;
 	@Version
 	protected Integer version;
 
@@ -89,11 +91,11 @@ public abstract class Osoba {
 		this.jmbg = jmbg;
 	}
 	@JsonSerialize(using = CustomDateSerializer.class)
-	@JsonDeserialize(using = CustomDateDeserializer.class)
 	public Date getDatumRodjenja() {
 		return datumRodjenja;
 	}
-
+	
+	@JsonDeserialize(using = CustomDateDeserializer.class)
 	public void setDatumRodjenja(Date datumRodjenja) {
 		this.datumRodjenja = datumRodjenja;
 	}

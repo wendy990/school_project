@@ -16,6 +16,23 @@ public class Predaje {
 	@Id
 	@Column(nullable = false, insertable = false, updatable = false)
 	private Integer predmetId;
+	
+	@Id
+	@Column(nullable = false, insertable = false, updatable = false)
+	private Integer odeljenjeId;
+	
+	
+
+	public Predaje() {
+		super();
+	}
+
+	public Predaje(Integer nastavnikId, Integer predmetId, Integer odeljenjeId) {
+		super();
+		this.nastavnikId = nastavnikId;
+		this.predmetId = predmetId;
+		this.odeljenjeId = odeljenjeId;
+	}
 
 	public Integer getNastavnikId() {
 		return nastavnikId;
@@ -33,14 +50,14 @@ public class Predaje {
 		this.predmetId = predmetId;
 	}
 
-	public Predaje(Integer nastavnikId, Integer predmetId) {
-		super();
-		this.nastavnikId = nastavnikId;
-		this.predmetId = predmetId;
+	public Integer getOdeljenjeId() {
+		return odeljenjeId;
 	}
 
-	public Predaje() {
-		super();
+	public void setOdeljenjeId(Integer odeljenjeId) {
+		this.odeljenjeId = odeljenjeId;
 	}
+	
+	
 
 }

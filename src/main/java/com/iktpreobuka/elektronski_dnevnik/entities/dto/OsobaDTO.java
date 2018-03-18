@@ -32,7 +32,6 @@ public class OsobaDTO {
 		this.adresa = adresa;
 	}
 
-	@JsonProperty("tipKorisnika")
 	public TipKorisnika getTipKorisnika() {
 		return tipKorisnika;
 	}
@@ -41,7 +40,6 @@ public class OsobaDTO {
 		this.tipKorisnika = tipKorisnika;
 	}
 
-	@JsonProperty("ime")
 	public String getIme() {
 		return ime;
 	}
@@ -50,7 +48,6 @@ public class OsobaDTO {
 		this.ime = ime;
 	}
 
-	@JsonProperty("prezime")
 	public String getPrezime() {
 		return prezime;
 	}
@@ -59,7 +56,6 @@ public class OsobaDTO {
 		this.prezime = prezime;
 	}
 
-	@JsonProperty("email")
 	public String getEmail() {
 		return email;
 	}
@@ -68,7 +64,6 @@ public class OsobaDTO {
 		this.email = email;
 	}
 
-	@JsonProperty("jmbg")
 	public String getJmbg() {
 		return jmbg;
 	}
@@ -77,8 +72,7 @@ public class OsobaDTO {
 		this.jmbg = jmbg;
 	}
 
-	@JsonProperty("datumRodjenja")
-	@JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "dd-MM-yyyy hh:mm:ss")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
 	public Date getDatumRodjenja() {
 		return datumRodjenja;
 	}
@@ -87,7 +81,6 @@ public class OsobaDTO {
 		this.datumRodjenja = datumRodjenja;
 	}
 
-	@JsonProperty("adresa")
 	public String getAdresa() {
 		return adresa;
 	}

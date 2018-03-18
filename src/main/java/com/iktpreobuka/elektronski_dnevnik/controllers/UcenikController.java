@@ -3,6 +3,8 @@ package com.iktpreobuka.elektronski_dnevnik.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -57,8 +59,8 @@ public class UcenikController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getUcenici() {
-		return new ResponseEntity<Iterable>(ucenikRepository.findAll(), HttpStatus.OK);
+	public ResponseEntity<?> getUcenici(Pageable pageable) {
+		return new ResponseEntity<Page<Ucenik>>(ucenikRepository.findAll(pageable), HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
@@ -144,9 +146,14 @@ public class UcenikController {
 				if (odeljenjeRepository.exists(odeljenjeId)) {
 					Ucenik ucenik = ucenikRepository.findOne(id);
 					Odeljenje odeljenje = odeljenjeRepository.findOne(odeljenjeId);
+					if(odeljenje.getUcenici().contains(ucenik)) {
+						return new ResponseEntity<RESTError>(new RESTError(6, "Ucenik vec pripada odeljenju"), HttpStatus.BAD_REQUEST);
+					}
+					else {
 					ucenik.setOdeljenje(odeljenje);
 					ucenikRepository.save(ucenik);
 					return new ResponseEntity<Ucenik>(ucenik, HttpStatus.OK);
+				}
 				}
 				return new ResponseEntity<RESTError>(new RESTError(5, "Odeljenje ne postoji"), HttpStatus.NOT_FOUND);
 			}
@@ -157,8 +164,18 @@ public class UcenikController {
 		}
 	}
 	
-	/*@RequestMapping(method = RequestMethod.GET, value = "/{roditeljId}/ucenik")
-	public ResponseEntity<?> getDecaByRoditeljId(@PathVariable Integer roditeljId) {
-		return new ResponseEntity<List<Ucenik>>(ucenikDao.findUcenikByRoditeljId(roditeljId), HttpStatus.OK);
+	@RequestMapping(method = RequestMethod.GET, value = "/roditelj/{roditeljId}")
+	public ResponseEntity<?> getUceniciByRoditeljId(@PathVariable Integer roditeljId) {
+		return new ResponseEntity<List<Ucenik>>(ucenikDao.findUceniciByRoditeljId(roditeljId), HttpStatus.OK);
+	}
+	
+	/*@RequestMapping(method = RequestMethod.GET, value = "/predmet/{predmetId}")
+	public ResponseEntity<?> getUceniciByPredmetId(@PathVariable Integer predmetId) {
+		return new ResponseEntity<List<Ucenik>>(ucenikDao.findUceniciByPredmetId(predmetId), HttpStatus.OK);
 	}*/
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/odeljenje/{odeljenjeId}")
+	public ResponseEntity<?> getUceniciByOdeljenjeId(@PathVariable Integer odeljenjeId) {
+		return new ResponseEntity<List<Ucenik>>(ucenikDao.findUceniciByOdeljenjeId(odeljenjeId), HttpStatus.OK);
+	}
 }

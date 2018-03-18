@@ -6,6 +6,11 @@ import com.iktpreobuka.elektronski_dnevnik.entities.Ucenik;
 
 public interface UcenikDao {
 	
-//	public List<Ucenik>findUcenikByRoditeljId(Integer roditeljId);
+	public List<Ucenik>findUceniciByRoditeljId(Integer roditeljId);
+	
+	//public List<Ucenik>findUceniciByPredmetId(Integer predmetId);
+	
+	public List<Ucenik>findUceniciByOdeljenjeId(Integer odeljenjeId);
+
 
 }

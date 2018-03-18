@@ -2,6 +2,7 @@ package com.iktpreobuka.elektronski_dnevnik.entities.dto;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.iktpreobuka.elektronski_dnevnik.enums.TipOcene;
 
 public class OcenaDTO {
@@ -44,6 +45,7 @@ public class OcenaDTO {
 		this.vrednost = vrednost;
 	}
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
 	public Date getDatumUnosa() {
 		return datumUnosa;
 	}

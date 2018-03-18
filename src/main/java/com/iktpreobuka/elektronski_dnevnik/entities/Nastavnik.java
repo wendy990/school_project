@@ -21,6 +21,10 @@ public class Nastavnik extends Osoba {
 
 	@OneToMany(mappedBy = "nastavnik", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
 	private List<Ocena> ocene = new ArrayList<>();
+	
+	//OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	//@JoinColumn(name = "korisnik")
+	//private Korisnik korisnik;
 
 	public Nastavnik() {
 		super();

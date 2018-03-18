@@ -11,35 +11,59 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class Korisnik {
+public class Korisnik{
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
-	@Column(name = "korisnicko_ime")
-	private String userName;
-	private String password; //ogranicenje duzine pasworda??
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "korisnik_id")
+    private int id;
+	@Column(name = "email")
+    //@ValidEmail(message = "*Please provide an email")
+    //@NotEmpty(message = "*Please provide an email")
+	private String email;
+	@Column(name = "password")
+    //@Length(min = 5, message = "*Your password must have at least 5 characters")
+    //@NotEmpty(message = "*Please provide your password")
+    //@Transient
+	private String password;
+	
+	//OneToOne(mappedBy = "korisnik", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	//private Ucenik ucenikId;
+	
+	//OneToOne(mappedBy = "korisnik", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	//private Nastavnik nastavnikId;
+	
+	//OneToOne(mappedBy = "korisnik", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    //private Roditelj roditeljId;
+	
+	//ILI DA BUDE OSOBA OSOBA?
+
+	
+	/*@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	@JoinColumn(name = "role")
+	private RoleEntity role;*/
+	
 	@Version
 	private Integer version;
-
+	
+	public Korisnik(String email, String password, Integer version) {
+		super();
+		this.email = email;
+		this.password = password;
+		this.version = version;
+	}
+	
 	public Korisnik() {
 		super();
+		// TODO Auto-generated constructor stub
 	}
 
-	public Integer getId() {
-		return id;
+	public String getEmail() {
+		return email;
 	}
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public String getPassword() {
@@ -57,5 +81,6 @@ public class Korisnik {
 	public void setVersion(Integer version) {
 		this.version = version;
 	}
-
+	
+	
 }

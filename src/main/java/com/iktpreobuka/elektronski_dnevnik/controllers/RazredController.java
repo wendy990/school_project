@@ -1,22 +1,18 @@
 package com.iktpreobuka.elektronski_dnevnik.controllers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.iktpreobuka.elektronski_dnevnik.entities.Odeljenje;
-import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
 import com.iktpreobuka.elektronski_dnevnik.entities.Razred;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.RazredDTO;
-import com.iktpreobuka.elektronski_dnevnik.repositories.PredmetRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.RazredRepository;
 
 @RestController
@@ -25,9 +21,6 @@ public class RazredController {
 
 	@Autowired
 	private RazredRepository razredRepository;
-
-	@Autowired
-	private PredmetRepository predmetRepository;
 
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> createRazred(@RequestBody RazredDTO razredDTO) {
@@ -42,8 +35,8 @@ public class RazredController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getAll() {
-		return new ResponseEntity<Iterable>(razredRepository.findAll(), HttpStatus.OK);
+	public ResponseEntity<?> getAll(Pageable pageable) {
+		return new ResponseEntity<Page<Razred>>(razredRepository.findAll(pageable), HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")

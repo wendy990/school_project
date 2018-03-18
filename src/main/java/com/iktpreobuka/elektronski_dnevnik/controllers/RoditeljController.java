@@ -3,6 +3,8 @@ package com.iktpreobuka.elektronski_dnevnik.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,12 +22,12 @@ import com.iktpreobuka.elektronski_dnevnik.repositories.RoditeljRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.UcenikRepository;
 
 @RestController
-@RequestMapping(path ="/api/v1/roditelj")
+@RequestMapping(path = "/api/v1/roditelj")
 public class RoditeljController {
-	
+
 	@Autowired
 	private RoditeljRepository roditeljRepository;
-	
+
 	@Autowired
 	private UcenikRepository ucenikRepository;
 
@@ -53,8 +55,8 @@ public class RoditeljController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?>getRoditelji() {
-		return new ResponseEntity<Iterable>(roditeljRepository.findAll(), HttpStatus.OK);
+	public ResponseEntity<?> getRoditelji(Pageable pageable) {
+		return new ResponseEntity<Page<Roditelj>>(roditeljRepository.findAll(pageable), HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
@@ -132,31 +134,33 @@ public class RoditeljController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	@RequestMapping(method = RequestMethod.PUT, value = "/{id}/ucenik")
-	public ResponseEntity<?> addUcenikToRoditelj(@PathVariable Integer id, @RequestParam Integer ucenikId){
+	public ResponseEntity<?> addUcenikToRoditelj(@PathVariable Integer id, @RequestParam Integer ucenikId) {
 		try {
-			if(roditeljRepository.exists(id)) {
-				if(ucenikRepository.exists(ucenikId)) {
-				Roditelj roditelj = roditeljRepository.findOne(id);
-				Ucenik ucenik = ucenikRepository.findOne(ucenikId);
-				List<Ucenik> deca = roditelj.getDeca();
-				deca.add(ucenik);
-				roditelj.setDeca(deca);
-				roditeljRepository.save(roditelj);
-				return new ResponseEntity<Roditelj>(roditelj, HttpStatus.OK);
+			if (roditeljRepository.exists(id)) {
+				if (ucenikRepository.exists(ucenikId)) {
+					Roditelj roditelj = roditeljRepository.findOne(id);
+					Ucenik ucenik = ucenikRepository.findOne(ucenikId);
+					if (roditelj.getDeca().contains(ucenik)) {
+						return new ResponseEntity<RESTError>(new RESTError(6, "Ucenik je vec dodeljen roditelju"),
+								HttpStatus.BAD_REQUEST);
+					} else {
+						List<Ucenik> deca = roditelj.getDeca();
+						deca.add(ucenik);
+						roditelj.setDeca(deca);
+						roditeljRepository.save(roditelj);
+						return new ResponseEntity<Roditelj>(roditelj, HttpStatus.OK);
+					}
+				}
+				return new ResponseEntity<RESTError>(new RESTError(3, "Korisnik ne postoji u bazi"),
+						HttpStatus.NOT_FOUND);
 			}
-				return new ResponseEntity<RESTError>(new RESTError(3, "Korisnik ne postoji u bazi"), HttpStatus.NOT_FOUND);
-			}	
-			    return new ResponseEntity<RESTError>(new RESTError(3, "Korisnik ne postoji u bazi"), HttpStatus.NOT_FOUND);
-		}
-		catch (Exception e) {
+			return new ResponseEntity<RESTError>(new RESTError(3, "Korisnik ne postoji u bazi"), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
 			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	
-
 
 }

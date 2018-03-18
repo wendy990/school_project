@@ -1,10 +1,10 @@
 package com.iktpreobuka.elektronski_dnevnik.repositories;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
 
-public interface PredmetRepository extends CrudRepository<Predmet, Integer> {
+public interface PredmetRepository extends PagingAndSortingRepository<Predmet, Integer> {
 	
 	Predmet findPredmetByNaziv(String naziv);
 	

@@ -24,12 +24,12 @@ public class Razred {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
-	@Column(name = "Razred", unique = true, length = 1)
+	@Column(name = "Razred", unique = true, precision = 1)
 	private Integer razred;
 	@OneToMany(mappedBy = "razred", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
 	private List<Odeljenje> odeljenja = new ArrayList<>();
-	@OneToMany(mappedBy = "razred", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
-	private List<Predmet> predmeti = new ArrayList<>();
+	/*@OneToMany(mappedBy = "razred", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
+	private List<Predmet> predmeti = new ArrayList<>();*/
 	@Version
 	private Integer version;
 
@@ -69,14 +69,14 @@ public class Razred {
 		this.version = version;
 	}
 
-	@JsonBackReference("predmetrazredreference")
+	/*@JsonBackReference("predmetrazredreference")
 	public List<Predmet> getPredmeti() {
 		return predmeti;
 	}
 
 	public void setPredmeti(List<Predmet> predmeti) {
 		this.predmeti = predmeti;
-	}
+	}*/
 	
 
 }

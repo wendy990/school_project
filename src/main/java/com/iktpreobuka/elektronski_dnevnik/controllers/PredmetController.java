@@ -3,6 +3,8 @@ package com.iktpreobuka.elektronski_dnevnik.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,12 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.iktpreobuka.elektronski_dnevnik.entities.Predaje;
 import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
-import com.iktpreobuka.elektronski_dnevnik.entities.Razred;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.PredmetDTO;
 import com.iktpreobuka.elektronski_dnevnik.repositories.NastavnikRepository;
+import com.iktpreobuka.elektronski_dnevnik.repositories.OdeljenjeRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.PredajeRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.PredmetRepository;
-import com.iktpreobuka.elektronski_dnevnik.repositories.RazredRepository;
+import com.iktpreobuka.elektronski_dnevnik.services.PredmetDao;
 
 @RestController
 @RequestMapping(path = "/api/v1/predmet")
@@ -29,13 +31,16 @@ public class PredmetController {
 	private PredmetRepository predmetRepository;
 
 	@Autowired
-	private RazredRepository razredRepository;
-
-	@Autowired
 	private NastavnikRepository nastavnikRepository;
 
 	@Autowired
+	private OdeljenjeRepository odeljenjeRepository;
+
+	@Autowired
 	private PredajeRepository predajeRepository;
+
+	@Autowired
+	private PredmetDao predmetDao;
 
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> createPredmet(@RequestBody PredmetDTO predmetDTO) {
@@ -50,8 +55,8 @@ public class PredmetController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getPredmeti() {
-		return new ResponseEntity<Iterable>(predmetRepository.findAll(), HttpStatus.OK);
+	public ResponseEntity<?> getPredmeti(Pageable pageable) {
+		return new ResponseEntity<Page<Predmet>>(predmetRepository.findAll(pageable), HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
@@ -63,7 +68,7 @@ public class PredmetController {
 			}
 			return new ResponseEntity<RESTError>(new RESTError(2, "Predmet ne postoji u bazi"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
-			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
+			return new ResponseEntity<RESTError>(new RESTError(5, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -78,7 +83,7 @@ public class PredmetController {
 			}
 			return new ResponseEntity<RESTError>(new RESTError(2, "Predmet ne postoji u bazi"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
-			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
+			return new ResponseEntity<RESTError>(new RESTError(5, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -99,33 +104,38 @@ public class PredmetController {
 			}
 			return new ResponseEntity<RESTError>(new RESTError(2, "Predmet ne postoji u bazi"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
-			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
+			return new ResponseEntity<RESTError>(new RESTError(5, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@RequestMapping(method = RequestMethod.PUT, value = "/{predmetId}/predaje")
-	public ResponseEntity<?> addPredmetToNastavnik(@PathVariable Integer predmetId, @RequestParam Integer nastavnikId) {
+	public ResponseEntity<?> addPredmetToNastavnikAndOdeljenje(@PathVariable Integer predmetId,
+			@RequestParam Integer nastavnikId, @RequestParam Integer odeljenjeId) {
 		try {
 			if (predmetRepository.exists(predmetId)) {
 				if (nastavnikRepository.exists(nastavnikId)) {
-					Predaje predaje = new Predaje(nastavnikId, predmetId);
-					predajeRepository.save(predaje);
-					Predmet predmet = predmetRepository.findOne(predmetId);
-					return new ResponseEntity<Predmet>(predmet, HttpStatus.OK);
+					if (odeljenjeRepository.exists(odeljenjeId)) {
+						Predaje predaje = new Predaje(nastavnikId, predmetId, odeljenjeId);
+						predajeRepository.save(predaje);
+						Predmet predmet = predmetRepository.findOne(predmetId);
+						return new ResponseEntity<Predmet>(predmet, HttpStatus.OK);
+					}
+					return new ResponseEntity<RESTError>(new RESTError(3, "Odeljenje ne postoji u bazi"),
+							HttpStatus.NOT_FOUND);
 				}
-				return new ResponseEntity<RESTError>(new RESTError(3, "Nastavnik ne postoji u bazi"),
+				return new ResponseEntity<RESTError>(new RESTError(4, "Nastavnik ne postoji u bazi"),
 						HttpStatus.NOT_FOUND);
 			}
 			return new ResponseEntity<RESTError>(new RESTError(2, "Predmet ne postoji u bazi"), HttpStatus.NOT_FOUND);
 
 		} catch (Exception e) {
-			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
+			return new ResponseEntity<RESTError>(new RESTError(5, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	@RequestMapping(method = RequestMethod.PUT, value = "/{predmetId}/razred")
+
+	/*@RequestMapping(method = RequestMethod.PUT, value = "/{predmetId}/razred")
 	public ResponseEntity<?> addPredmetToRazred(@PathVariable Integer predmetId, @RequestParam Integer razredId) {
 		try {
 			if (predmetRepository.exists(predmetId)) {
@@ -139,14 +149,28 @@ public class PredmetController {
 				return new ResponseEntity<RESTError>(new RESTError(5, "Razred ne postoji u bazi"),
 						HttpStatus.BAD_REQUEST);
 			}
-			return new ResponseEntity<RESTError>(new RESTError(2, "Predmet ne postoji u bazi"),
-					HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<RESTError>(new RESTError(2, "Predmet ne postoji u bazi"), HttpStatus.BAD_REQUEST);
 
 		} catch (Exception e) {
 			return new ResponseEntity<RESTError>(new RESTError(3, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}*/
+
+	@RequestMapping(method = RequestMethod.GET, value = "/ucenik/{ucenikId}")
+	public ResponseEntity<?> getPredmetiByUcenikId(@PathVariable Integer ucenikId) {
+		return new ResponseEntity<List<Predmet>>(predmetDao.findPredmetByUcenikId(ucenikId), HttpStatus.OK);
+	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/nastavnik/{nastavnikId}")
+	public ResponseEntity<?> getPredmetiByNastavnikId(@PathVariable Integer nastavnikId) {
+		return new ResponseEntity<List<Predmet>>(predmetDao.findPredmetByNastavnikId(nastavnikId), HttpStatus.OK);
+	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/odeljenje/{odeljenjeId}")
+	public ResponseEntity<?> getPredmetiByOdeljenjeId(@PathVariable Integer odeljenjeId) {
+		return new ResponseEntity<List<Predmet>>(predmetDao.findPredmetByOdeljenjeId(odeljenjeId), HttpStatus.OK);
 	}
 
 }

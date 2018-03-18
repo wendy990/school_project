@@ -1,6 +1,10 @@
 package com.iktpreobuka.elektronski_dnevnik.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,13 +14,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.iktpreobuka.elektronski_dnevnik.entities.Nastavnik;
 import com.iktpreobuka.elektronski_dnevnik.entities.Odeljenje;
-import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
 import com.iktpreobuka.elektronski_dnevnik.entities.Razred;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.RazredDTO;
 import com.iktpreobuka.elektronski_dnevnik.repositories.OdeljenjeRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.RazredRepository;
+import com.iktpreobuka.elektronski_dnevnik.services.OdeljenjeDao;
 
 @RestController
 @RequestMapping(path = "/api/v1/odeljenje")
@@ -27,6 +30,9 @@ public class OdeljenjeController {
 
 	@Autowired
 	private RazredRepository razredRepository;
+
+	@Autowired
+	private OdeljenjeDao odeljenjeDao;
 
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> createOdeljenje(@RequestBody RazredDTO odeljenjeDTO) {
@@ -41,10 +47,10 @@ public class OdeljenjeController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getAll() {
-		return new ResponseEntity<Iterable>(odeljenjeRepository.findAll(), HttpStatus.OK);
+	public ResponseEntity<?> getAll(Pageable pageable) {
+		return new ResponseEntity<Page<Odeljenje>>(odeljenjeRepository.findAll(pageable), HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getOdeljenjeById(@PathVariable Integer id) {
 		try {
@@ -99,9 +105,16 @@ public class OdeljenjeController {
 				if (razredRepository.exists(razredId)) {
 					Odeljenje odeljenje = odeljenjeRepository.findOne(id);
 					Razred razred = razredRepository.findOne(razredId);
-					odeljenje.setRazred(razred);
-					odeljenjeRepository.save(odeljenje);
-					return new ResponseEntity<Odeljenje>(odeljenje, HttpStatus.OK);
+					if (razred.getOdeljenja().contains(odeljenje)) {
+						return new ResponseEntity<RESTError>(new RESTError(6, "Odeljenje vec pripada razredu"),
+								HttpStatus.BAD_REQUEST);
+					} else if (odeljenje.getOznaka().startsWith(razred.getRazred().toString())) {
+						odeljenje.setRazred(razred);
+						odeljenjeRepository.save(odeljenje);
+						return new ResponseEntity<Odeljenje>(odeljenje, HttpStatus.OK);
+					}
+					return new ResponseEntity<RESTError>(new RESTError(5, "Odabrali ste pogresan razred"),
+							HttpStatus.BAD_REQUEST);
 				}
 				return new ResponseEntity<RESTError>(new RESTError(2, "Ne postoji razred"), HttpStatus.NOT_FOUND);
 			}
@@ -110,6 +123,11 @@ public class OdeljenjeController {
 			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/nastavnik/{nastavnikId}")
+	public ResponseEntity<?> getOdeljenjeByNastavnikId(@PathVariable Integer nastavnikId) {
+		return new ResponseEntity<List<Odeljenje>>(odeljenjeDao.findOdeljenjeByNastavnikId(nastavnikId), HttpStatus.OK);
 	}
 
 }

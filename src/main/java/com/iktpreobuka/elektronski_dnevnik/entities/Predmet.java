@@ -30,9 +30,9 @@ public class Predmet {
 	private String naziv;
 	@Column(name = "nedeljni_fond")
 	private Integer fond;
-	@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	/*@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
 	@JoinColumn(name = "razred")
-	private Razred razred;
+	private Razred razred;*/
 	@OneToMany(mappedBy = "predmet", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
 	private List<Ocena> ocene = new ArrayList<>();
 	@Version
@@ -75,14 +75,14 @@ public class Predmet {
 		this.ocene = ocene;
 	}
 
-	@JsonManagedReference("predmetrazredreference")
+	/*@JsonManagedReference("predmetrazredreference")
 	public Razred getRazred() {
 		return razred;
 	}
 
 	public void setRazred(Razred razred) {
 		this.razred = razred;
-	}
+	}*/
 
 	public Integer getVersion() {
 		return version;

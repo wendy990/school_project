@@ -1,8 +1,8 @@
 package com.iktpreobuka.elektronski_dnevnik.controllers;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,11 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iktpreobuka.elektronski_dnevnik.entities.Nastavnik;
-import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.OsobaDTO;
 import com.iktpreobuka.elektronski_dnevnik.enums.TipKorisnika;
 import com.iktpreobuka.elektronski_dnevnik.repositories.NastavnikRepository;
-import com.iktpreobuka.elektronski_dnevnik.repositories.PredmetRepository;
 
 @RestController
 @RequestMapping(path = "/api/v1/nastavnik")
@@ -26,8 +24,6 @@ public class NastavnikController {
 	@Autowired
 	private NastavnikRepository nastavnikRepository;
 	
-	@Autowired
-	private PredmetRepository predmetRepository;
 
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> createNastavnik(@RequestBody OsobaDTO nastavnikDTO) {
@@ -53,8 +49,8 @@ public class NastavnikController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getNastavnici() {
-		return new ResponseEntity<Iterable>(nastavnikRepository.findAll(), HttpStatus.OK);
+	public ResponseEntity<?> getNastavnici(Pageable pageable) {
+		return new ResponseEntity<Page<Nastavnik>>(nastavnikRepository.findAll(pageable), HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
