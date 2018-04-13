@@ -9,6 +9,7 @@ import javax.persistence.Query;
 
 import org.springframework.stereotype.Service;
 
+import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
 import com.iktpreobuka.elektronski_dnevnik.entities.Ucenik;
 
 @Service
@@ -24,30 +25,16 @@ public class UcenikDaoImpl implements UcenikDao {
 
 		Query query = em.createQuery(sql);
 		query.setParameter("roditeljId", roditeljId);
-		query.setFirstResult(0);
-		query.setMaxResults(5);
+		/*query.setFirstResult(0);
+		query.setMaxResults(5);*/
 
 		List<Ucenik> result = new ArrayList<>();
 		result = query.getResultList();
 		return result;
 	}
 
-	/*@Override
-	public List<Ucenik> findUceniciByPredmetId(Integer predmetId) {
-
-		String sql = "select distinct(u) from Ucenik u, Predmet p " + "where u.odeljenje.razred.id = p.razred.id "
-				+ "and p.id = :predmetId ";
-
-		Query query = em.createQuery(sql);
-		query.setParameter("predmetId", predmetId);
-		query.setFirstResult(0);
-		query.setMaxResults(5);
-
-		List<Ucenik> result = new ArrayList<>();
-		result = query.getResultList();
-		return result;
-	}
-	*/
+	
+	
 	@Override
 	public List<Ucenik> findUceniciByOdeljenjeId(Integer odeljenjeId) {
 
@@ -55,10 +42,26 @@ public class UcenikDaoImpl implements UcenikDao {
 
 		Query query = em.createQuery(sql);
 		query.setParameter("odeljenjeId", odeljenjeId);
-		query.setFirstResult(0);
-		query.setMaxResults(5);
+		/*query.setFirstResult(0);
+		query.setMaxResults(5);*/
 
 		List<Ucenik> result = new ArrayList<>();
+		result = query.getResultList();
+		return result;
+	}
+	
+	@Override
+	public List<Predmet>findPredmetByUcenikId(Integer ucenikId){
+		
+		String sql = "select distinct(p) from Predmet p, Ucenik u, Predaje pr " +
+		"where u.odeljenje.id = pr.odeljenjeId and p.id = pr.predmetId and u.id = :ucenikId ";
+		
+		Query query = em.createQuery(sql);
+		query.setParameter("ucenikId", ucenikId);
+		/*query.setFirstResult(0);
+		query.setMaxResults(5);*/
+		
+		List<Predmet>result = new ArrayList<>();
 		result = query.getResultList();
 		return result;
 	}

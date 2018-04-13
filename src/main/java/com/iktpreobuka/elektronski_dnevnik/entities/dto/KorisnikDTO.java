@@ -3,22 +3,20 @@ package com.iktpreobuka.elektronski_dnevnik.entities.dto;
 public class KorisnikDTO {
 	//@ValidEmail
    // @NotNull
-    private String email;
-	
+    private String email;	
 	//@ValidPassword
     private String password;
-
-    
-    
+    //username?
+    private String role;
+ 
 	public KorisnikDTO() {
-		super();
-		// TODO Auto-generated constructor stub
 	}
 
-	public KorisnikDTO(String email, String password) {
+	public KorisnikDTO(String email, String password, String role) {
 		super();
 		this.email = email;
 		this.password = password;
+		this.role = role;
 	}
 
 	public String getEmail() {
@@ -36,6 +34,16 @@ public class KorisnikDTO {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+	
+	
 
    /* @NotNull
     @Size(min = 1)

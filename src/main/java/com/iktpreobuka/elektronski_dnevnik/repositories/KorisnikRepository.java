@@ -8,4 +8,5 @@ public interface KorisnikRepository extends PagingAndSortingRepository<Korisnik,
 	
 	//findByUsername;
 	Korisnik findByEmail(String email);
+
 }

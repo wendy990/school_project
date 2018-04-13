@@ -1,6 +1,7 @@
 package com.iktpreobuka.elektronski_dnevnik.controllers;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,11 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iktpreobuka.elektronski_dnevnik.entities.Nastavnik;
@@ -20,6 +21,7 @@ import com.iktpreobuka.elektronski_dnevnik.entities.Ocena;
 import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
 import com.iktpreobuka.elektronski_dnevnik.entities.Ucenik;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.OcenaDTO;
+import com.iktpreobuka.elektronski_dnevnik.entities.dto.OsobaDTO;
 import com.iktpreobuka.elektronski_dnevnik.repositories.NastavnikRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.OcenaRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.PredmetRepository;
@@ -28,6 +30,7 @@ import com.iktpreobuka.elektronski_dnevnik.services.OcenaDao;
 import com.iktpreobuka.elektronski_dnevnik.services.OdeljenjeDao;
 import com.iktpreobuka.elektronski_dnevnik.services.PredmetDao;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping(path = "/api/v1/ocena")
 public class OcenaController {
@@ -53,9 +56,9 @@ public class OcenaController {
 	@Autowired
 	private OdeljenjeDao odeljenjeDao;
 
-	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<?> addOcenaToUcenik(@RequestParam Integer predmetId, @RequestParam Integer ucenikId,
-			@RequestParam Integer nastavnikId, @RequestBody OcenaDTO ocenaDTO) {
+	@RequestMapping(method = RequestMethod.POST, value = "/{nastavnikId}/{ucenikId}/{predmetId}")
+	public ResponseEntity<?> addOcenaToUcenik(@PathVariable Integer nastavnikId, @PathVariable Integer ucenikId,
+			@PathVariable Integer predmetId, @RequestBody OcenaDTO ocenaDTO) {
 		if (predmetRepository.exists(predmetId)) {
 			if (ucenikRepository.exists(ucenikId)) {
 				if (nastavnikRepository.exists(nastavnikId)) {
@@ -64,15 +67,15 @@ public class OcenaController {
 							Predmet predmet = predmetRepository.findOne(predmetId);
 							Ucenik ucenik = ucenikRepository.findOne(ucenikId);
 							Nastavnik nastavnik = nastavnikRepository.findOne(nastavnikId);
-							if (predmetDao.findPredmetByNastavnikId(nastavnikId).contains(predmet)) {
-								if (odeljenjeDao.findOdeljenjeByNastavnikId(nastavnikId).contains(ucenik.getOdeljenje())) {
+							if(predmetDao.findPredmetByNastavnikAndUcenik(nastavnikId, ucenikId).contains(predmet)) {
+								//if (predmetDao.findPredmetByNastavnikIdAndOdeljenjeId(nastavnikId, ucenik.getOdeljenje().getId()).contains(predmet)){
 									Ocena ocena = new Ocena();
 									ocena.setPredmet(predmet);
 									ocena.setUcenik(ucenik);
 									ocena.setNastavnik(nastavnik);
 									ocena.setTipOcene(ocenaDTO.getTipOcene());
 									ocena.setVrednost(ocenaDTO.getVrednost());
-									ocena.setDatumUnosa(ocenaDTO.getDatumUnosa());
+									ocena.setDatumUnosa(new Date());
 									ocena.setPolugodiste(ocenaDTO.getPolugodiste());
 									ocena.setDeleted(false);
 									ocenaRepository.save(ocena);
@@ -80,8 +83,6 @@ public class OcenaController {
 								}
 								return new ResponseEntity<RESTError>(new RESTError(9, "Predmet i nastavnik ne pripadaju odeljenju ucenika"),HttpStatus.BAD_REQUEST);
 							}
-							return new ResponseEntity<RESTError>(new RESTError(10, "Nastavnik ne predaje odabrani predmet"), HttpStatus.BAD_REQUEST);
-						}
 						return new ResponseEntity<RESTError>(new RESTError(1, "Oznake polugodista su 1 ili 2"), HttpStatus.BAD_REQUEST);
 					}
 					return new ResponseEntity<RESTError>(new RESTError(2, "Ocena mora biti izmedju 1 i 5"), HttpStatus.BAD_REQUEST);
@@ -92,45 +93,6 @@ public class OcenaController {
 		}
 		return new ResponseEntity<RESTError>(new RESTError(5, "Predmet ne postoji u bazi"), HttpStatus.NOT_FOUND);
 	}
-	
-	/*	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<?> addOcenaToUcenik(@RequestParam Integer predmetId, @RequestParam Integer ucenikId,
-			@RequestParam Integer nastavnikId, @RequestBody OcenaDTO ocenaDTO) {
-		if (predmetRepository.exists(predmetId)) {
-			if (ucenikRepository.exists(ucenikId)) {
-				if (nastavnikRepository.exists(nastavnikId)) {
-					if ((ocenaDTO.getVrednost() >= 1) && (ocenaDTO.getVrednost() <= 5)) {
-						if ((ocenaDTO.getPolugodiste() == 1) || (ocenaDTO.getPolugodiste() == 2)) {
-							Predmet predmet = predmetRepository.findOne(predmetId);
-							Ucenik ucenik = ucenikRepository.findOne(ucenikId);
-							Nastavnik nastavnik = nastavnikRepository.findOne(nastavnikId);
-							Ocena ocena = new Ocena();
-							ocena.setPredmet(predmet);
-							ocena.setUcenik(ucenik);
-							ocena.setNastavnik(nastavnik);
-							ocena.setTipOcene(ocenaDTO.getTipOcene());
-							ocena.setVrednost(ocenaDTO.getVrednost());
-							ocena.setDatumUnosa(ocenaDTO.getDatumUnosa());
-							ocena.setPolugodiste(ocenaDTO.getPolugodiste());
-							ocena.setDeleted(false);
-							ocenaRepository.save(ocena);
-							return new ResponseEntity<Ocena>(ocena, HttpStatus.OK);
-						}
-						return new ResponseEntity<RESTError>(new RESTError(1, "Oznake polugodista su 1 ili 2"),
-								HttpStatus.BAD_REQUEST);
-					}
-					return new ResponseEntity<RESTError>(new RESTError(2, "Ocena mora biti izmedju 1 i 5"),
-							HttpStatus.BAD_REQUEST);
-				}
-				return new ResponseEntity<RESTError>(new RESTError(3, "Nastavnik ne postoji u bazi"),
-						HttpStatus.NOT_FOUND);
-			}
-			return new ResponseEntity<RESTError>(new RESTError(4, "Ucenik ne postoji u bazi"), HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<RESTError>(new RESTError(5, "Predmet ne postoji u bazi"), HttpStatus.NOT_FOUND);
-	}
-*/
-
 
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getOcene(Pageable pageable) {
@@ -147,6 +109,30 @@ public class OcenaController {
 			return new ResponseEntity<RESTError>(new RESTError(6, "Ocena ne postoji u bazi"), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
 			return new ResponseEntity<RESTError>(new RESTError(7, "Exception occured: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@RequestMapping(method = RequestMethod.PUT, value = "/{id}")
+	public ResponseEntity<?> modifyOcenaById(@PathVariable Integer id, @RequestBody OcenaDTO ocenaDTO) {
+		try {
+			if (ocenaRepository.exists(id)) {
+				Ocena ocena = ocenaRepository.findOne(id);
+				if (ocenaDTO.getTipOcene() != null) {
+					ocena.setTipOcene(ocenaDTO.getTipOcene());
+				}
+				if (ocenaDTO.getVrednost() != null) {
+					ocena.setVrednost(ocenaDTO.getVrednost());
+				}
+				if (ocenaDTO.getPolugodiste() != null) {
+					ocena.setPolugodiste(ocenaDTO.getPolugodiste());
+				}
+				ocenaRepository.save(ocena);
+				return new ResponseEntity<Ocena>(ocena, HttpStatus.OK);
+			}
+			return new ResponseEntity<RESTError>(new RESTError(3, "Ocena ne postoji u bazi"), HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

@@ -9,8 +9,10 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.iktpreobuka.elektronski_dnevnik.config.Views;
 import com.iktpreobuka.elektronski_dnevnik.customdate.CustomDateDeserializer;
 import com.iktpreobuka.elektronski_dnevnik.customdate.CustomDateSerializer;
 import com.iktpreobuka.elektronski_dnevnik.enums.TipKorisnika;
@@ -19,20 +21,28 @@ import com.iktpreobuka.elektronski_dnevnik.enums.TipKorisnika;
 public abstract class Osoba {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(Views.Public.class)
 	protected Integer id;
 	@Column(name = "tip_korisnika")
+	@JsonView(Views.Admin.class)
 	protected TipKorisnika tipKorisnika;
 	@Column(name = "ime")
+	@JsonView(Views.Public.class)
 	protected String ime;
 	@Column(name = "prezime")
+	@JsonView(Views.Public.class)
 	protected String prezime;
-	@Column(name = "email")
+	@Column(name = "email", unique = true)
+	@JsonView(Views.Admin.class)
 	protected String email;
 	@Column(name = "jmbg", length = 13, unique = true)
+	@JsonView(Views.Admin.class)
 	protected String jmbg;
 	@Column(name = "datum_rodjenja")
+	@JsonView(Views.Admin.class)
 	protected Date datumRodjenja;
 	@Column(name = "adresa")
+	@JsonView(Views.Admin.class)
 	protected String adresa;
 	//@OneToOne
 	//private Korisnik korisnik;
@@ -90,6 +100,7 @@ public abstract class Osoba {
 	public void setJmbg(String jmbg) {
 		this.jmbg = jmbg;
 	}
+	
 	@JsonSerialize(using = CustomDateSerializer.class)
 	public Date getDatumRodjenja() {
 		return datumRodjenja;

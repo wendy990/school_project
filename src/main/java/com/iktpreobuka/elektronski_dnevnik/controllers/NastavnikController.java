@@ -1,10 +1,13 @@
 package com.iktpreobuka.elektronski_dnevnik.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iktpreobuka.elektronski_dnevnik.entities.Nastavnik;
+import com.iktpreobuka.elektronski_dnevnik.entities.Roditelj;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.OsobaDTO;
 import com.iktpreobuka.elektronski_dnevnik.enums.TipKorisnika;
 import com.iktpreobuka.elektronski_dnevnik.repositories.NastavnikRepository;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping(path = "/api/v1/nastavnik")
 public class NastavnikController {
@@ -24,7 +29,7 @@ public class NastavnikController {
 	@Autowired
 	private NastavnikRepository nastavnikRepository;
 	
-
+	
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> createNastavnik(@RequestBody OsobaDTO nastavnikDTO) {
 		if (nastavnikDTO.getTipKorisnika().equals(TipKorisnika.NASTAVNIK)) {
@@ -47,11 +52,17 @@ public class NastavnikController {
 			return new ResponseEntity<RESTError>(new RESTError(2, "Pogresan tip korisnika"), HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<Iterable<Nastavnik>> getNastavnici() {
+		return new ResponseEntity<Iterable<Nastavnik>>(nastavnikRepository.findAll(), HttpStatus.OK);
+	}
 
+	/*@CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<?> getNastavnici(Pageable pageable) {
 		return new ResponseEntity<Page<Nastavnik>>(nastavnikRepository.findAll(pageable), HttpStatus.OK);
-	}
+	}*/
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
 	public ResponseEntity<?> getNastavnikById(@PathVariable Integer id) {
@@ -70,11 +81,8 @@ public class NastavnikController {
 	@RequestMapping(method = RequestMethod.GET, value = "/jmbg")
 	public ResponseEntity<?> getNastavnikByJmbg(@RequestParam String jmbg) {
 		try {
-			if (nastavnikRepository.findByJmbg(jmbg) != null) {
-				Nastavnik nastavnik = nastavnikRepository.findByJmbg(jmbg);
-				return new ResponseEntity<Nastavnik>(nastavnik, HttpStatus.OK);
-			}
-			return new ResponseEntity<RESTError>(new RESTError(3, "Korisnik ne postoji u bazi"), HttpStatus.NOT_FOUND);
+			List<Nastavnik> nastavnici = nastavnikRepository.findNastavniciByJmbgStartingWith(jmbg);
+			return new ResponseEntity<List<Nastavnik>>(nastavnici, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
@@ -101,22 +109,29 @@ public class NastavnikController {
 		try {
 			if (nastavnikRepository.exists(id)) {
 				Nastavnik nastavnik = nastavnikRepository.findOne(id);
-				if (!nastavnikDTO.getIme().isEmpty()) {
+				if(nastavnikDTO.getTipKorisnika() != null) {
+					if(nastavnikDTO.getTipKorisnika().equals(TipKorisnika.NASTAVNIK)) {
+						nastavnik.setTipKorisnika(nastavnikDTO.getTipKorisnika());
+					}else{
+						return new ResponseEntity<RESTError>(new RESTError(2, "Pogresan tip korisnika"), HttpStatus.BAD_REQUEST);
+				}
+				}
+				if (nastavnikDTO.getIme() != null) {
 					nastavnik.setIme(nastavnikDTO.getIme());
 				}
-				if (!nastavnikDTO.getPrezime().isEmpty()) {
+				if (nastavnikDTO.getPrezime() != null) {
 					nastavnik.setPrezime(nastavnikDTO.getPrezime());
 				}
-				if (!nastavnikDTO.getJmbg().isEmpty()) {
+				if (nastavnikDTO.getJmbg() != null) {
 					nastavnik.setJmbg(nastavnikDTO.getJmbg());
 				}
-				if (!nastavnikDTO.getAdresa().isEmpty()) {
+				if (nastavnikDTO.getAdresa() != null) {
 					nastavnik.setAdresa(nastavnikDTO.getAdresa());
 				}
 				if (nastavnikDTO.getDatumRodjenja() != null) {
 					nastavnik.setDatumRodjenja(nastavnikDTO.getDatumRodjenja());
 				}
-				if (!nastavnikDTO.getEmail().isEmpty()) {
+				if (nastavnikDTO.getEmail() != null) {
 					nastavnik.setEmail(nastavnikDTO.getEmail());
 				}
 				nastavnikRepository.save(nastavnik);

@@ -1,61 +1,56 @@
 package com.iktpreobuka.elektronski_dnevnik.entities;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Version;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class Korisnik{
+public class Korisnik {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "korisnik_id")
-    private int id;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private int id;
 	@Column(name = "email")
-    //@ValidEmail(message = "*Please provide an email")
-    //@NotEmpty(message = "*Please provide an email")
+	// @ValidEmail(message = "*Please provide an email")
+	// @NotEmpty(message = "*Please provide an email")
 	private String email;
 	@Column(name = "password")
-    //@Length(min = 5, message = "*Your password must have at least 5 characters")
-    //@NotEmpty(message = "*Please provide your password")
-    //@Transient
+	// @Length(min = 5, message = "*Your password must have at least 5 characters")
+	// @NotEmpty(message = "*Please provide your password")
+	// @Transient
 	private String password;
-	
-	//OneToOne(mappedBy = "korisnik", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-	//private Ucenik ucenikId;
-	
-	//OneToOne(mappedBy = "korisnik", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-	//private Nastavnik nastavnikId;
-	
-	//OneToOne(mappedBy = "korisnik", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-    //private Roditelj roditeljId;
-	
-	//ILI DA BUDE OSOBA OSOBA?
-
-	
-	/*@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
 	@JoinColumn(name = "role")
-	private RoleEntity role;*/
-	
+	private Role role;
+	@OneToOne(mappedBy = "korisnik", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
+	private Ucenik ucenik;
+	@OneToOne(mappedBy = "korisnik", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
+	private Nastavnik nastavnik;
+	@OneToOne(mappedBy = "korisnik", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
+	private Roditelj roditelj;
+	@OneToOne(mappedBy = "korisnik", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
+	private Administrator administrator;
+	// ILI DA BUDE OSOBA OSOBA?
 	@Version
 	private Integer version;
-	
-	public Korisnik(String email, String password, Integer version) {
-		super();
-		this.email = email;
-		this.password = password;
-		this.version = version;
-	}
-	
+
 	public Korisnik() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public String getEmail() {
@@ -66,6 +61,7 @@ public class Korisnik{
 		this.email = email;
 	}
 
+	@JsonIgnore
 	public String getPassword() {
 		return password;
 	}
@@ -81,6 +77,58 @@ public class Korisnik{
 	public void setVersion(Integer version) {
 		this.version = version;
 	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 	
+	@JsonManagedReference(value = "korisnikrolereference")
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	@JsonBackReference(value = "korisnikucenikreference")
+	public Ucenik getUcenik() {
+		return ucenik;
+	}
+
+	public void setUcenik(Ucenik ucenik) {
+		this.ucenik = ucenik;
+	}
+
+	@JsonBackReference(value = "korisniknastavnikreference")
+	public Nastavnik getNastavnik() {
+		return nastavnik;
+	}
+
+	public void setNastavnik(Nastavnik nastavnik) {
+		this.nastavnik = nastavnik;
+	}
 	
+	@JsonBackReference(value = "korisnikroditeljreference")
+	public Roditelj getRoditelj() {
+		return roditelj;
+	}
+
+	public void setRoditelj(Roditelj roditelj) {
+		this.roditelj = roditelj;
+	}
+	
+	@JsonBackReference(value = "korisnikadministratorreference")
+	public Administrator getAdministrator() {
+		return administrator;
+	}
+
+	public void setAdministrator(Administrator administrator) {
+		this.administrator = administrator;
+	}
+
 }

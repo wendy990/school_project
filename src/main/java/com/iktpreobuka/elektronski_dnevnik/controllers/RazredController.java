@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import com.iktpreobuka.elektronski_dnevnik.entities.Razred;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.RazredDTO;
 import com.iktpreobuka.elektronski_dnevnik.repositories.RazredRepository;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping(path = "/api/v1/razred")
 public class RazredController {
@@ -25,18 +27,21 @@ public class RazredController {
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity<?> createRazred(@RequestBody RazredDTO razredDTO) {
 		if (razredRepository.findByRazred(razredDTO.getRazred()) == null) {
-			Razred razred = new Razred();
-			razred.setRazred(razredDTO.getRazred());
-			razredRepository.save(razred);
-			return new ResponseEntity<Razred>(razred, HttpStatus.OK);
+			if ((razredDTO.getRazred() >= 1) && (razredDTO.getRazred() <= 8)) {
+				Razred razred = new Razred();
+				razred.setRazred(razredDTO.getRazred());
+				razredRepository.save(razred);
+				return new ResponseEntity<Razred>(razred, HttpStatus.OK);
+			}
+			return new ResponseEntity<RESTError>(new RESTError(1, "Oznaka razreda mora biti od 1 do 8"),
+					HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<RESTError>(new RESTError(1, "Postoji odeljenje sa tom oznakom"),
-				HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<RESTError>(new RESTError(1, "Postoji razred sa tom oznakom"), HttpStatus.BAD_REQUEST);
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getAll(Pageable pageable) {
-		return new ResponseEntity<Page<Razred>>(razredRepository.findAll(pageable), HttpStatus.OK);
+	public ResponseEntity<Iterable<Razred>> getAll() {
+		return new ResponseEntity<Iterable<Razred>>(razredRepository.findAll(), HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
@@ -58,9 +63,13 @@ public class RazredController {
 		try {
 			if (razredRepository.exists(id)) {
 				Razred razred = razredRepository.findOne(id);
-				razred.setRazred(razredDTO.getRazred());
-				razredRepository.save(razred);
-				return new ResponseEntity<Razred>(razred, HttpStatus.OK);
+				if ((razredDTO.getRazred() >= 1) && (razredDTO.getRazred() <= 8)) {
+					razred.setRazred(razredDTO.getRazred());
+					razredRepository.save(razred);
+					return new ResponseEntity<Razred>(razred, HttpStatus.OK);
+				}
+				return new ResponseEntity<RESTError>(new RESTError(1, "Oznaka razreda mora biti od 1 do 8"),
+						HttpStatus.BAD_REQUEST);
 			}
 			return new ResponseEntity<RESTError>(new RESTError(2, "Ne postoji razred sa tom oznakom"),
 					HttpStatus.NOT_FOUND);

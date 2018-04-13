@@ -9,23 +9,20 @@ public class OcenaDTO {
 
 	private TipOcene tipOcene;
 	private Integer vrednost;
-	private Date datumUnosa;
 	private Integer polugodiste;
-	private boolean zakljucna;
+	//private Date datumUnosa;
 	private boolean deleted;
 
 	public OcenaDTO() {
 		super();
 	}
 
-	public OcenaDTO(TipOcene tipOcene, Integer vrednost, Date datumUnosa, Integer polugodiste, boolean zakljucna,
+	public OcenaDTO(TipOcene tipOcene, Integer vrednost, Integer polugodiste,
 			boolean deleted) {
 		super();
 		this.tipOcene = tipOcene;
 		this.vrednost = vrednost;
-		this.datumUnosa = datumUnosa;
 		this.polugodiste = polugodiste;
-		this.zakljucna = zakljucna;
 		this.deleted = deleted;
 	}
 
@@ -45,15 +42,6 @@ public class OcenaDTO {
 		this.vrednost = vrednost;
 	}
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-	public Date getDatumUnosa() {
-		return datumUnosa;
-	}
-
-	public void setDatumUnosa(Date datumUnosa) {
-		this.datumUnosa = datumUnosa;
-	}
-
 	public Integer getPolugodiste() {
 		return polugodiste;
 	}
@@ -61,15 +49,7 @@ public class OcenaDTO {
 	public void setPolugodiste(Integer polugodiste) {
 		this.polugodiste = polugodiste;
 	}
-
-	public boolean isZakljucna() {
-		return zakljucna;
-	}
-
-	public void setZakljucna(boolean zakljucna) {
-		this.zakljucna = zakljucna;
-	}
-
+	
 	public boolean isDeleted() {
 		return deleted;
 	}

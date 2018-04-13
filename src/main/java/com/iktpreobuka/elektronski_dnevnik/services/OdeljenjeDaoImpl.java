@@ -27,8 +27,8 @@ public class OdeljenjeDaoImpl implements OdeljenjeDao{
 
 		Query query = em.createQuery(sql);
 		query.setParameter("nastavnikId", nastavnikId);
-		query.setFirstResult(0);
-		query.setMaxResults(5);
+		/*query.setFirstResult(0);
+		query.setMaxResults(5);*/
 
 		List<Odeljenje> result = new ArrayList<>();
 		result = query.getResultList();

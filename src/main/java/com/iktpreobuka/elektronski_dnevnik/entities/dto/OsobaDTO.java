@@ -4,6 +4,10 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.iktpreobuka.elektronski_dnevnik.customdate.CustomDateDeserializer;
+import com.iktpreobuka.elektronski_dnevnik.customdate.CustomDateSerializer;
 import com.iktpreobuka.elektronski_dnevnik.enums.TipKorisnika;
 
 public class OsobaDTO {
@@ -71,12 +75,13 @@ public class OsobaDTO {
 	public void setJmbg(String jmbg) {
 		this.jmbg = jmbg;
 	}
-
+	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
 	public Date getDatumRodjenja() {
 		return datumRodjenja;
 	}
-
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
 	public void setDatumRodjenja(Date datumRodjenja) {
 		this.datumRodjenja = datumRodjenja;
 	}

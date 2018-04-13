@@ -16,6 +16,8 @@ import javax.persistence.Version;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.iktpreobuka.elektronski_dnevnik.config.Views;
 
 @Entity
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -23,10 +25,13 @@ public class Razred {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@JsonView(Views.Public.class)
 	private Integer id;
 	@Column(name = "Razred", unique = true, precision = 1)
+	@JsonView(Views.Public.class)
 	private Integer razred;
 	@OneToMany(mappedBy = "razred", fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH })
+	@JsonView(Views.Private.class)
 	private List<Odeljenje> odeljenja = new ArrayList<>();
 	/*@OneToMany(mappedBy = "razred", fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH})
 	private List<Predmet> predmeti = new ArrayList<>();*/

@@ -3,10 +3,9 @@ package com.iktpreobuka.elektronski_dnevnik.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,8 +13,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.iktpreobuka.elektronski_dnevnik.entities.Odeljenje;
 import com.iktpreobuka.elektronski_dnevnik.entities.Predaje;
 import com.iktpreobuka.elektronski_dnevnik.entities.Predmet;
+import com.iktpreobuka.elektronski_dnevnik.entities.Roditelj;
+import com.iktpreobuka.elektronski_dnevnik.entities.Ucenik;
 import com.iktpreobuka.elektronski_dnevnik.entities.dto.PredmetDTO;
 import com.iktpreobuka.elektronski_dnevnik.repositories.NastavnikRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.OdeljenjeRepository;
@@ -23,6 +25,7 @@ import com.iktpreobuka.elektronski_dnevnik.repositories.PredajeRepository;
 import com.iktpreobuka.elektronski_dnevnik.repositories.PredmetRepository;
 import com.iktpreobuka.elektronski_dnevnik.services.PredmetDao;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping(path = "/api/v1/predmet")
 public class PredmetController {
@@ -55,8 +58,8 @@ public class PredmetController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<?> getPredmeti(Pageable pageable) {
-		return new ResponseEntity<Page<Predmet>>(predmetRepository.findAll(pageable), HttpStatus.OK);
+	public ResponseEntity<Iterable<Predmet>> getPredmeti() {
+		return new ResponseEntity<Iterable<Predmet>>(predmetRepository.findAll(), HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
@@ -72,6 +75,18 @@ public class PredmetController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/naziv")
+	public ResponseEntity<?> getPredmetByNaziv(@RequestParam String naziv) {
+		try {
+				List<Predmet> predmeti = predmetRepository.findPredmetiByNazivStartingWith(naziv);
+				return new ResponseEntity<List<Predmet>>(predmeti, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<RESTError>(new RESTError(4, "Exception occured: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 
 	@RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
 	public ResponseEntity<?> deletePredmet(@PathVariable Integer id) {
@@ -93,7 +108,7 @@ public class PredmetController {
 		try {
 			if (predmetRepository.exists(id)) {
 				Predmet predmet = predmetRepository.findOne(id);
-				if (!predmetDTO.getNaziv().isEmpty()) {
+				if (predmetDTO.getNaziv() != null) {
 					predmet.setNaziv(predmetDTO.getNaziv());
 				}
 				if (predmetDTO.getFond() != null) {
@@ -109,6 +124,7 @@ public class PredmetController {
 		}
 	}
 
+	/*@CrossOrigin(origins = "http://localhost:4200")
 	@RequestMapping(method = RequestMethod.PUT, value = "/{predmetId}/predaje")
 	public ResponseEntity<?> addPredmetToNastavnikAndOdeljenje(@PathVariable Integer predmetId,
 			@RequestParam Integer nastavnikId, @RequestParam Integer odeljenjeId) {
@@ -133,8 +149,39 @@ public class PredmetController {
 			return new ResponseEntity<RESTError>(new RESTError(5, "Exception occured: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	}
+	}*/
 
+	@RequestMapping(method = RequestMethod.PUT, value = "/{predmetId}/predaje")
+	public ResponseEntity<?> addPredmetToNastavnikAndOdeljenje(@PathVariable Integer predmetId,
+			@RequestParam Integer nastavnikId, @RequestParam Integer odeljenjeId) {
+		try {
+			if (predmetRepository.exists(predmetId)) {
+				if (nastavnikRepository.exists(nastavnikId)) {
+					if (odeljenjeRepository.exists(odeljenjeId)) {
+						Predmet predmet = predmetRepository.findOne(predmetId);
+						Odeljenje odeljenje = odeljenjeRepository.findOne(odeljenjeId);
+						if(predmet.getNaziv().endsWith(odeljenje.getRazred().getRazred().toString())) {
+						Predaje predaje = new Predaje(nastavnikId, predmetId, odeljenjeId);
+						predajeRepository.save(predaje);				
+						return new ResponseEntity<Predmet>(predmet, HttpStatus.OK);
+					}
+						return new ResponseEntity<RESTError>(new RESTError(3, "Predmet ne mozete dodeliti odabranom odeljenju"),
+							HttpStatus.NOT_FOUND);
+					}
+					return new ResponseEntity<RESTError>(new RESTError(3, "Odeljenje ne postoji u bazi"),
+							HttpStatus.NOT_FOUND);
+				}
+				return new ResponseEntity<RESTError>(new RESTError(4, "Nastavnik ne postoji u bazi"),
+						HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<RESTError>(new RESTError(2, "Predmet ne postoji u bazi"), HttpStatus.NOT_FOUND);
+
+		} catch (Exception e) {
+			return new ResponseEntity<RESTError>(new RESTError(5, "Exception occured: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
 	/*@RequestMapping(method = RequestMethod.PUT, value = "/{predmetId}/razred")
 	public ResponseEntity<?> addPredmetToRazred(@PathVariable Integer predmetId, @RequestParam Integer razredId) {
 		try {
@@ -171,6 +218,21 @@ public class PredmetController {
 	@RequestMapping(method = RequestMethod.GET, value = "/odeljenje/{odeljenjeId}")
 	public ResponseEntity<?> getPredmetiByOdeljenjeId(@PathVariable Integer odeljenjeId) {
 		return new ResponseEntity<List<Predmet>>(predmetDao.findPredmetByOdeljenjeId(odeljenjeId), HttpStatus.OK);
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/no/{nastavnikId}/{odeljenjeId}")
+	public ResponseEntity<?> getPredmetiByNastavnikAndOdeljenje(@PathVariable Integer nastavnikId, @PathVariable Integer odeljenjeId) {
+		return new ResponseEntity<List<Predmet>>(predmetDao.findPredmetByNastavnikIdAndOdeljenjeId(nastavnikId, odeljenjeId), HttpStatus.OK);
+	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/{nastavnikId}/{ucenikId}")
+	public ResponseEntity<?> getPredmetiByNastavnikAndUcenik(@PathVariable Integer nastavnikId, @PathVariable Integer ucenikId) {
+		return new ResponseEntity<List<Predmet>>(predmetDao.findPredmetByNastavnikAndUcenik(nastavnikId, ucenikId), HttpStatus.OK);
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/slusa/{predmetId}")
+	public ResponseEntity<?> getUceniciByPredmetId(@PathVariable Integer predmetId) {
+		return new ResponseEntity<List<Ucenik>>(predmetDao.findUceniciByPredmetId(predmetId), HttpStatus.OK);
 	}
 
 }

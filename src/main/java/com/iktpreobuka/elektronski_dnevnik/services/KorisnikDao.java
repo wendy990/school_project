@@ -1,12 +1,27 @@
 package com.iktpreobuka.elektronski_dnevnik.services;
 
-import com.iktpreobuka.elektronski_dnevnik.entities.Korisnik;
-import com.iktpreobuka.elektronski_dnevnik.entities.dto.KorisnikDTO;
+import java.util.List;
 
 public interface KorisnikDao {
 
-	Korisnik findKorisnikByEmail(String email);
+	// ResponseEntity<?> findKorisnikByEmail(String email);
 
-	void createKorisnikAccount(KorisnikDTO korisnik);
+	/*
+	 * List<Ucenik>findUcenikByEmail(String email);
+	 * 
+	 * List<Nastavnik>findNastavnikByEmail(String email);
+	 * 
+	 * List<Roditelj>findRoditeljByEmail(String email);
+	 * 
+	 * List<Administrator>findAdministratorByEmail(String email);
+	 */
+
+	List<String> findAllEmails();
+
+	//String encodePassword(String password);
+	
+	List<String> findPasswordByUsername(String email);
+
+	// void registerKorisnik(KorisnikDTO korisnikDTO);
 
 }
